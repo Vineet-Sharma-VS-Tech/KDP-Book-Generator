@@ -1,0 +1,50 @@
+name: Generate KDP Book
+ 
+on:
+  workflow_dispatch:
+    inputs:
+      theme:
+        description: 'Choose Book Niche'
+        required: true
+        default: 'funny_characters'
+        type: choice
+        options:
+          - funny_characters
+          - animal_families
+          - baby_dinosaurs
+          - adult_mandalas
+          - ocean_creatures
+      page_count:
+        description: 'Number of coloring pages'
+        required: true
+        default: '48'
+        type: string
+ 
+jobs:
+  build-book:
+    runs-on: ubuntu-latest
+ 
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+ 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+ 
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+ 
+      - name: Generate Book Pages & Metadata
+        run: |
+          python book_generator.py --theme "${{ github.event.inputs.theme }}" --pages ${{ github.event.inputs.page_count }}
+ 
+      - name: Upload Book Package (PDF + Metadata)
+        uses: actions/upload-artifact@v4
+        with:
+          name: KDP_Ready_${{ github.event.inputs.theme }}_Book
+          path: output/
+ 
